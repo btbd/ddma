@@ -1,0 +1,86 @@
+;
+; ddma.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=ddma.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+ddma_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ddma.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ddma.DeviceDesc%=ddma_Device, Root\ddma ; TODO: edit hw-id
+
+[ddma_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ddma.sys
+
+;-------------- Service installation
+[ddma_Device.NT.Services]
+AddService = ddma,%SPSVCINST_ASSOCSERVICE%, ddma_Service_Inst
+
+; -------------- ddma driver install sections
+[ddma_Service_Inst]
+DisplayName    = %ddma.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ddma.sys
+
+;
+;--- ddma_Device Coinstaller installation ------
+;
+
+[ddma_Device.NT.CoInstallers]
+AddReg=ddma_Device_CoInstaller_AddReg
+CopyFiles=ddma_Device_CoInstaller_CopyFiles
+
+[ddma_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ddma_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[ddma_Device.NT.Wdf]
+KmdfService =  ddma, ddma_wdfsect
+[ddma_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "ddma Installation Disk"
+ddma.DeviceDesc = "ddma Device"
+ddma.SVCDESC = "ddma Service"
